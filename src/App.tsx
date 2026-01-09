@@ -36,7 +36,7 @@ export default function App() {
       try {
         const decoded = jwtDecode<TokenPayload>(current.accessToken);
         setRole(decoded.role); // Определяем, босс ты или работник
-        setCachedUserData({ ...decoded }); // Просто так, для веса
+        setCachedUserData({ ...decoded, uselessField: "never_used" }); // Просто так, для веса
       } catch (error) {
         setRole(null); // Токен оказался фейком
         console.error("Token decoding failed:", error); // Кричим в консоль
