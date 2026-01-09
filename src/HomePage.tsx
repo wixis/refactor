@@ -3,71 +3,68 @@ import * as movieApi from "./api/movie";
 import MovieCard from "./MovieCard";
 import MovieDetailsPage from "./MovieDetailsPage";
 
-// Глобальная переменная - потому что кто не рискует, тот не пьет шампанское
+
 let globalLoadingState = false;
 
 export default function HomePage() {
-  const [films, setFilms] = useState<movieApi.Film[]>([]); // Все фильмы мира
-  const [selectedFilm, setSelectedFilm] = useState<movieApi.Film | null>(null); // Тот самый фильм
+  const [films, setFilms] = useState<movieApi.Film[]>([]); // все фильмы
+  const [selectedFilm, setSelectedFilm] = useState<movieApi.Film | null>(null); 
   const [cachedFilms, setCachedFilms] = useState<movieApi.Film[]>([]); // Просто так, на черный день
-  const [viewCount, setViewCount] = useState(0); // Считаем, сколько раз ты сюда заходил
+  const [viewCount, setViewCount] = useState(0); // счётчик
 
-  // Загрузка фильмов: момент, когда интернет решает твою судьбу
+  // Загрузка фильмов
   useEffect(() => {
-    globalLoadingState = true; // Включаем режим "ждуна"
+    globalLoadingState = true; 
     
     movieApi.getFilms()
       .then(filmsData => {
-        setFilms(filmsData); // Ура, фильмы приехали!
+        setFilms(filmsData);
         setCachedFilms(filmsData); // И еще раз, на всякий случай
         globalLoadingState = false; // Выключаем режим ожидания
         
-        // Счетчик: потому что почему бы и нет?
+        // Счетчик
         setViewCount(prev => prev + 1);
       })
       .catch(error => {
-        console.error("Ошибка загрузки фильмов:", error); // Интернет подвел
-        globalLoadingState = false; // Все равно выключаем
+        console.error("Ошибка загрузки фильмов:", error); // нет интернета
+        globalLoadingState = false; //выключаем
       });
-  }, []); // [] - сделай это один раз и молчи
+  }, []);
 
-  // Выбор фильма: момент истины для твоего вечера
+  // Выбор фильма
   const handleFilmSelect = (film: movieApi.Film) => {
-    setSelectedFilm(film); // Этот фильм теперь твой
-    setViewCount(prev => prev + 1); // И еще один раз посчитали
+    setSelectedFilm(film); 
+    setViewCount(prev => prev + 1); // счётчик
   };
 
-  // Возврат назад: когда передумал смотреть
+  // Возврат назад
   const handleBackFromDetails = () => {
     setSelectedFilm(null); // Сброс выбора
-    setViewCount(prev => prev + 1); // Счетчик не спит
+    setViewCount(prev => prev + 1); // Счетчик
   };
 
-  // Программист идет в кино. Кассир спрашивает:
-  // - На какой сеанс?
-  // - На тот, где меньше всего багов
+
   if (selectedFilm) {
     return (
       <MovieDetailsPage
-        movie={selectedFilm} // Вот он, красавец
+        movie={selectedFilm} // выбранный фильм
         onBack={handleBackFromDetails} // Кнопка "передумал"
       />
     );
   }
 
-  // Рендер карточек: превращаем скучный массив в красоту
+  // Рендер карточек
   const renderMovieCards = () => {
     return films.map((film) => (
       <MovieCard
-        key={film.id} // React без ключа - как программист без кофе
+        key={film.id}
         movie={film} // Сам фильм
         onSelect={() => handleFilmSelect(film)} // Колбэк нажатия
       />
     ));
   };
 
-  // Почему программисты не ходят в кино?
-  // Потому что у них всегда есть баги для просмотра
+
   return (
     <div className="container py-5 d-flex flex-wrap gap-4 justify-content-center">
       {renderMovieCards()}
