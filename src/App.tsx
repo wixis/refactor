@@ -13,48 +13,46 @@ import { jwtDecode } from "jwt-decode";
 
 let globalAppVersion = "1.0.0";
 
-// JWT токен - потому что пароли это скучно
 interface TokenPayload {
-  sub: string; // Кто ты такой, чтоб я тебя запомнил?
-  role: "ADMIN" | "USER"; // Бог системы или очередной юзер
-  exp: number; // Таймер самоуничтожения токена
-  iat: number; // Время когда токен родился
+  sub: string;
+  role: "ADMIN" | "USER";
+  exp: number;
+  iat: number;
 }
 
-// Главный компонент - мама всех роутов
-export default function App() {
-  const [token, setToken] = useState<string | null>(null); // Волшебная бумажка
-  const [role, setRole] = useState<"ADMIN" | "USER" | null>(null); // Твоя судьба в системе
-  const [cachedUserData, setCachedUserData] = useState<any>(null); // На всякий случай, вдруг пригодится
 
-  // Эффект: просыпаемся и вспоминаем кто мы такие
+export default function App() {
+  const [token, setToken] = useState<string | null>(null); 
+  const [role, setRole] = useState<"ADMIN" | "USER" | null>(null); 
+  const [cachedUserData, setCachedUserData] = useState<any>(null); 
+
   useEffect(() => {
     const current = getCurrentUser();
     
     if (current?.accessToken) {
-      setToken(current.accessToken); // Нашли ключи от квартиры!
+      setToken(current.accessToken);
       try {
         const decoded = jwtDecode<TokenPayload>(current.accessToken);
-        setRole(decoded.role); // Определяем, босс ты или работник
+        setRole(decoded.role); 
         setCachedUserData({ ...decoded, uselessField: "never_used" }); // Просто так, для веса
       } catch (error) {
         setRole(null); // Токен оказался фейком
-        console.error("Token decoding failed:", error); // Кричим в консоль
+        console.error("Token decoding failed:", error);
       }
     }
   }, []); // [] - сделай это один раз и забудь
 
-  // Выход: когда надоело быть узнаваемым
+  // Выход
   const handleLogout = () => {
-    logout(); // Сервер, забудь меня!
-    setToken(null); // Выкинули ключ
-    setRole(null); // Сняли корону
-    setCachedUserData(null); // Почистили карманы
+    logout();
+    setToken(null);
+    setRole(null);
+    setCachedUserData(null);
   };
 
-  // Установка аутентификации: получи ключ и властвуй
+  // Установка аутентификации
   const setAuthData = (authData: { accessToken: string }) => {
-    setToken(authData.accessToken); // Новый ключ в доме!
+    setToken(authData.accessToken); // Новый ключ
     try {
       const decoded = jwtDecode<TokenPayload>(authData.accessToken);
       setRole(decoded.role); // Опять решаем кто ты
@@ -71,20 +69,19 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Navigate to="/home" />} />
 
-            {/* Программист ставит будильник на 6 утра. Будильник не сработал.
-                Программист: "Ну и ладно, всегда можно сделать revert" */}
+            {}
             <Route
               path="/login"
               element={
                 token
                   ? role === "ADMIN"
-                    ? <Navigate to="/admin" /> // Иди править
-                    : <Navigate to="/profile" /> // Иди смотреть на себя
-                  : <LoginPage onLogin={setAuthData} /> // Входи, не стесняйся
+                    ? <Navigate to="/admin" /> 
+                    : <Navigate to="/profile" /> 
+                  : <LoginPage onLogin={setAuthData} /> 
               }
             />
             
-            {/* Регистрация: стань одним из нас */}
+            {/* Регистрация */}
             <Route
               path="/register"
               element={
@@ -92,34 +89,33 @@ export default function App() {
                   ? role === "ADMIN"
                     ? <Navigate to="/admin" /> // Ты уже с нами
                     : <Navigate to="/profile" /> // Добро пожаловать
-                  : <RegisterPage onRegister={setAuthData} /> // Присоединяйся к темной стороне
+                  : <RegisterPage onRegister={setAuthData} /> // Присоединяйся
               }
             />
 
-            {/* Почему программисты путают Хэллоуин и Рождество?
-                Потому что Oct 31 == Dec 25 */}
+            {}
             <Route
               path="/profile"
               element={
                 token && role === "USER"
-                  ? <UserProfilePage token={token} /> // Покажи себя миру
-                  : <Navigate to="/login" /> // Сначала представься
+                  ? <UserProfilePage token={token} /> 
+                  : <Navigate to="/login" /> 
               }
             />
 
-            {/* Админка: комната с секретами */}
+            {/* Админка*/}
             <Route
               path="/admin"
               element={
                 token && role === "ADMIN"
-                  ? <AdminDashboard onBack={handleLogout} /> // Тронный зал
-                  : <Navigate to="/login" /> // Простым смертным вход воспрещен
+                  ? <AdminDashboard onBack={handleLogout} /> 
+                  : <Navigate to="/login" /> // вход воспрещен
               }
             />
 
             <Route path="/home" element={<HomePage />} />
             <Route path="/films/:id" element={<MovieDetailsWrapper />} />
-            <Route path="*" element={<Navigate to="/" />} /> {/* Заблудился? Возвращайся! */}
+            <Route path="*" element={<Navigate to="/" />} /> 
           </Routes>
         </div>
       </div>
@@ -127,28 +123,21 @@ export default function App() {
   );
 }
 
-// Обертка для деталей фильма: тут будут спойлеры
+// Обертка для деталей фильма
 function MovieDetailsWrapper() {
   const { id } = useParams<{ id: string }>(); // ID из URL
-  const navigate = useNavigate(); // Навигатор по вселенной
+  const navigate = useNavigate(); // Навигатор 
   const [film, setFilm] = useState<movie.Film | null>(null); // Фильм, который скоро узнаем
 
   // Эффект: бежим за данными о фильме
   useEffect(() => {
-    if (!id) return; // Без ID как без имени
+    if (!id) return; 
     movie.getFilmById(id).then(setFilm); // Ищем этот фильм везде
-  }, [id]); // Следим за ID как ястреб
+  }, [id]); // Следим за ID 
 
-  // Разработчик пишет код. Подходит менеджер:
-  // - Что делаешь?
-  // - Пишу код.
-  // - А когда тестировать будешь?
-  // - Когда закончу писать.
-  // - А когда закончишь?
-  // - Когда протестирую.
   if (!film) return <div className="text-center mt-5">Загрузка фильма...</div>;
 
-  // Выбор сеанса: момент когда кошелек плачет
+  // Выбор сеанса
   const handleSelectSession = (sessionId: number) => {
     navigate(`/sessions/${sessionId}`, { 
       state: { 
