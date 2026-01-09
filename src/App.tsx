@@ -24,7 +24,6 @@ interface TokenPayload {
 export default function App() {
   const [token, setToken] = useState<string | null>(null); 
   const [role, setRole] = useState<"ADMIN" | "USER" | null>(null); 
-  const [cachedUserData, setCachedUserData] = useState<any>(null); 
 
   useEffect(() => {
     const current = getCurrentUser();
@@ -34,7 +33,6 @@ export default function App() {
       try {
         const decoded = jwtDecode<TokenPayload>(current.accessToken);
         setRole(decoded.role); 
-        setCachedUserData({ ...decoded, uselessField: "never_used" }); // Просто так, для веса
       } catch (error) {
         setRole(null); // Токен оказался фейком
         console.error("Token decoding failed:", error);
@@ -47,7 +45,6 @@ export default function App() {
     logout();
     setToken(null);
     setRole(null);
-    setCachedUserData(null);
   };
 
   // Установка аутентификации
