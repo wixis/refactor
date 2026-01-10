@@ -9,7 +9,6 @@ let globalLoadingState = false;
 export default function HomePage() {
   const [films, setFilms] = useState<movieApi.Film[]>([]); // все фильмы
   const [selectedFilm, setSelectedFilm] = useState<movieApi.Film | null>(null); 
-  const [cachedFilms, setCachedFilms] = useState<movieApi.Film[]>([]); // Просто так, на черный день
   const [viewCount, setViewCount] = useState(0); // счётчик
 
   // Загрузка фильмов
@@ -19,7 +18,6 @@ export default function HomePage() {
     movieApi.getFilms()
       .then(filmsData => {
         setFilms(filmsData);
-        setCachedFilms(filmsData); // И еще раз, на всякий случай
         globalLoadingState = false; // Выключаем режим ожидания
         
         // Счетчик
