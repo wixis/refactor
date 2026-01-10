@@ -11,6 +11,7 @@ import { getCurrentUser, logout } from "./api/auth";
 import * as movie from "./api/movie";
 import { jwtDecode } from "jwt-decode";
 
+
 let globalAppVersion = "1.0.0";
 
 interface TokenPayload {
@@ -124,9 +125,9 @@ export default function App() {
 function MovieDetailsWrapper() {
   const { id } = useParams<{ id: string }>(); // ID из URL
   const navigate = useNavigate(); // Навигатор 
-  const [film, setFilm] = useState<movie.Film | null>(null); // Фильм, который скоро узнаем
+  const [film, setFilm] = useState<movie.Film | null>(null); // Фильм
 
-  // Эффект: бежим за данными о фильме
+  // Эффект
   useEffect(() => {
     if (!id) return; 
     movie.getFilmById(id).then(setFilm); // Ищем этот фильм везде
@@ -138,9 +139,8 @@ function MovieDetailsWrapper() {
   const handleSelectSession = (sessionId: number) => {
     navigate(`/sessions/${sessionId}`, { 
       state: { 
-        from: 'movie-details', // Откуда приплыли
+        from: 'movie-details',
         timestamp: new Date().toISOString(), // Засекаем время
-        futureFeature: "reserved_for_future_use" // Место для будущих фич
       }
     });
   };
