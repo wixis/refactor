@@ -3,78 +3,76 @@ import axios from "axios";
 import * as movieApi from "./api/movie";
 import ReviewsDisplay from "./ReviewsDisplay";
 
-// Интерфейсы - потому что TypeScript не доверяет нам
+// Интерфейсы
 interface Props {
-  movie: movieApi.Film; // Фильм, который заставит вас плакать (от цены билетов)
-  onBack: () => void; // Кнопка "спасите, я передумал"
+  movie: movieApi.Film; // Фильм
+  onBack: () => void; // Кнопка назад
 }
 
 interface Session {
-  id: string; // Уникальный ID сеанса да я мистер очевидность
-  movieId: string; // Какой фильм будем смотреть
-  hallId: string; // В каком зале сидеть
-  startAt: string; // Когда все начнется
+  id: string; // ID
+  movieId: string; // название
+  hallId: string; // номер зала
+  startAt: string; 
 }
 
 interface Seat {
-  id: string; // Уникальный ID места
-  row: number; // Чем дальше ряд, тем дешевле билет (и хуже видно)
-  number: number; // Номер - чтобы не сесть не туда
-  categoryId: string; // VIP или "как все"
-  status: string; // Свободно, занято или "ой, простите"
+  id: string; // 
+  row: number; // номер ряда
+  number: number; // номер места
+  categoryId: string; // категория
+  status: string; // занято/нет
 }
 
 interface Category {
-  id: string; // ID категории
+  id: string; // ID
   name: string; // Название (VIP, Стандарт, "У самого экрана")
-  priceCents: number; // Цена в копейках, потому что рубли - это скучно
+  priceCents: number; // Цена
 }
 
 interface HallPlan {
-  hallId: string; // ID зала
-  rows: number;  // Сколько рядов придется пробежать до туалета
-  seats: Seat[]; // Все места, хорошие и не очень
-  categories: Category[];  // Разные цены за одно и то же сидение
+  hallId: string; // ID
+  rows: number;  // номер ряда
+  seats: Seat[]; // номер места
+  categories: Category[];  // категория
 }
 
-// на этом месте у вас должен задергаться глаз, зеленый цвет уже ненавистен 
-
 interface Ticket {
-  id: string; // ID билета
-  seatId: string; // На какое место
-  categoryId: string; // Какая категория
-  status: "AVAILABLE" | "RESERVED" | "SOLD"; // Можно купить, уже занято или прощай
-  priceCents: number; // Во что влетим
+  id: string; 
+  seatId: string; 
+  categoryId: string; 
+  status: "AVAILABLE" | "RESERVED" | "SOLD"; 
+  priceCents: number; 
 }
 
 interface Purchase {
-  id: string; // ID покупки
-  ticketIds: string[]; // Какие билеты купили
+  id: string; 
+  ticketIds: string[]; 
 }
 
-// Главный компонент: здесь решается судьба вашего кошелька
+
 const MovieDetailsPage: React.FC<Props> = ({ movie, onBack }) => {
   const [sessions, setSessions] = useState<Session[]>([]); // Все сеансы
-  const [loadingSessions, setLoadingSessions] = useState(true); // Ждем-с...
+  const [loadingSessions, setLoadingSessions] = useState(true); 
   const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().split("T")[0] // Сегодня - идеальный день для траты денег
+    new Date().toISOString().split("T")[0] 
   );
   const [selectedSession, setSelectedSession] = useState<Session | null>(null); // Выбранный сеанс
 
   const [hallPlan, setHallPlan] = useState<HallPlan | null>(null); // План зала
-  const [loadingPlan, setLoadingPlan] = useState(false); // Опять ждем...
+  const [loadingPlan, setLoadingPlan] = useState(false); 
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]); // Выбранные места
   const [tickets, setTickets] = useState<Ticket[]>([]); // Все билеты
 
   const [purchase, setPurchase] = useState<Purchase | null>(null); // Покупка
 
-  // Данные карты - самая секретная часть
-  const [cardNumber, setCardNumber] = useState(""); // Цифры, которые все скрывают
-  const [expiryDate, setExpiryDate] = useState(""); // Когда карта скажет "пока"
-  const [cvv, setCvv] = useState(""); // Три волшебные цифры
-  const [cardHolderName, setCardHolderName] = useState(""); // Чье имя на карте
+  // Данные карты 
+  const [cardNumber, setCardNumber] = useState(""); 
+  const [expiryDate, setExpiryDate] = useState(""); 
+  const [cvv, setCvv] = useState(""); 
+  const [cardHolderName, setCardHolderName] = useState(""); //имя на карте
 
-  const token = localStorage.getItem("token"); // Наш пропуск в мир кино
+  const token = localStorage.getItem("token"); 
 
 
   useEffect(() => {
@@ -82,13 +80,13 @@ const MovieDetailsPage: React.FC<Props> = ({ movie, onBack }) => {
       try {
         setLoadingSessions(true); // Включаем режим ожидания
         const response = await axios.get("http://91.142.94.183:8080/sessions", {
-          params: { page: 0, size: 100, filmId: movie.id }, // 100 сеансов? Оптимист!
+          params: { page: 0, size: 100, filmId: movie.id }, 
         });
-        setSessions(response.data.data || []); // Ура, сеансы пришли!
+        setSessions(response.data.data || []); 
       } catch (err) {
-        console.error("Ошибка загрузки сеансов:", err); // Интернет снова подвел
+        console.error("Ошибка загрузки сеансов:", err); 
       } finally {
-        setLoadingSessions(false); // Выключаем ожидание
+        setLoadingSessions(false); 
       }
     };
     fetchSessions();
@@ -99,26 +97,25 @@ const MovieDetailsPage: React.FC<Props> = ({ movie, onBack }) => {
     (s) => s.startAt.slice(0, 10) === selectedDate // Только сегодняшние сеансы
   );
 
-  // Загружаем план зала и билеты
+  //план зала и билеты
   useEffect(() => {
     if (!selectedSession) return; // Если сеанс не выбран - отдыхаем
 
     const fetchHallPlanAndTickets = async () => {
       try {
-        setLoadingPlan(true); // Опять ждем...
-        setSelectedSeats([]);  // Сбрасываем выбор, чтобы начать мучиться заново
-        // Два запроса одновременно - потому что мы можем!
+        setLoadingPlan(true); 
+        setSelectedSeats([]);  // Сбрасываем выбор
         const [planRes, ticketsRes] = await Promise.all([
           axios.get(`http://91.142.94.183:8080/halls/${selectedSession.hallId}/plan`),
           axios.get(`http://91.142.94.183:8080/sessions/${selectedSession.id}/tickets`),
         ]);
 
-        setHallPlan(planRes.data); // План зала готов!
-        setTickets(ticketsRes.data); // Билеты тоже!
+        setHallPlan(planRes.data); // План зала 
+        setTickets(ticketsRes.data); // Билеты
       } catch (err) {
         console.error("Ошибка загрузки плана или билетов:", err); // Что-то пошло не так
       } finally {
-        setLoadingPlan(false); // Хватит ждать
+        setLoadingPlan(false);
       }
     };
 
@@ -134,7 +131,7 @@ const MovieDetailsPage: React.FC<Props> = ({ movie, onBack }) => {
     );
   };
 
-  // здесь моя муза уехала в отпуск простите 
+
   const getCategory = (catId: string) =>
     hallPlan?.categories.find((c) => c.id === catId); // Ищем нужную категорию
 
@@ -143,7 +140,7 @@ const MovieDetailsPage: React.FC<Props> = ({ movie, onBack }) => {
     return tickets.find((t) => t.seatId === seatId)?.status || "AVAILABLE"; // По умолчанию свободно
   };
 
-  // Считаем общую стоимость: момент, когда кошелек плачет
+  // Считаем общую стоимость
   const totalPrice = selectedSeats.reduce((sum, id) => {
     const seat = hallPlan?.seats.find((s) => s.id === id);
     if (!seat) return sum;
@@ -151,7 +148,7 @@ const MovieDetailsPage: React.FC<Props> = ({ movie, onBack }) => {
     return sum + (cat ? cat.priceCents : 0);
   }, 0);
 
-  // Бронирование: когда решаем, что эти места наши
+  // Бронирование
   const handleReserve = async () => {
     if (!token) return alert("Сначала авторизуйтесь"); // Без пропуска не пускаем
 
@@ -167,7 +164,7 @@ const MovieDetailsPage: React.FC<Props> = ({ movie, onBack }) => {
           { headers: { Authorization: `Bearer ${token}` } }
         );
       }
-      alert("Места успешно забронированы!"); // Ура, получилось!
+      alert("Места успешно забронированы!");
 
       // Собираем ID забронированных билетов
       const reservedTickets = tickets
@@ -188,7 +185,7 @@ const MovieDetailsPage: React.FC<Props> = ({ movie, onBack }) => {
     }
   };
 
-  // Оплата: момент истины для вашей карты
+  // Оплата
   const handlePayment = async () => {
     if (!token || !purchase) return alert("Ошибка оплаты"); // Что-то пошло не так
 
@@ -204,7 +201,7 @@ const MovieDetailsPage: React.FC<Props> = ({ movie, onBack }) => {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert("Оплата прошла успешно!"); // Деньги улетели!
+      alert("Оплата прошла успешно!");
       // Чистим все поля
       setPurchase(null);
       setSelectedSeats([]);
@@ -224,7 +221,7 @@ const MovieDetailsPage: React.FC<Props> = ({ movie, onBack }) => {
     }
   };
 
-  // ВНИМАНИЕ МОМЕНТ КОГДА ТЫ ДОЛЖЕН ЗАПЛАКАТЬ 
+
   return (
     <div className="app-container min-vh-100 d-flex flex-column bg-dark text-light">
       <div className="container py-5">
